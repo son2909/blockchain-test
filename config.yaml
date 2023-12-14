@@ -1,0 +1,5 @@
+chain_id: 1
+grpc_data_stream_endpoint: grpc.mainnet.aptoslabs.com:443
+grpc_data_stream_api_key: aptoslabs_2TnsbeKQaFD_3qZzhuvdqTxMegmXa2v1TSzTig3TTw2fz
+starting_version: 365149505
+db_connection_uri: "postgresql://postgres:0918@localhost:5432/block-chain-test"
