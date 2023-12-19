@@ -5,8 +5,10 @@ import {
   TransactionsProcessor,
   grpcTimestampToDate,
 } from "@aptos-labs/aptos-processor-sdk";
-import { DataSource, EntityManager } from "typeorm";
+import { DataSource } from "typeorm";
 import { Account } from "./entities/account.model";
+import { isDateWithinLast7Days } from "./common";
+import { eventTypeEnum, trackingKey } from "./constant";
 
 export class EventProcessor extends TransactionsProcessor {
   name(): string {
@@ -41,6 +43,9 @@ export class EventProcessor extends TransactionsProcessor {
       const transactionVersion = transaction.version!;
       const transactionBlockHeight = transaction.blockHeight!;
       const insertedAt = grpcTimestampToDate(transaction.timestamp!);
+      if (!isDateWithinLast7Days(insertedAt) || !transaction.user) {
+        continue;
+      }
 
       const userTransaction = transaction.user!;
 
@@ -49,18 +54,11 @@ export class EventProcessor extends TransactionsProcessor {
       const accounts: Account[] = [];
       let i = 0;
 
-      const registerDomainKey =
-        "0x867ed1f6bf916171b1de3ee92849b8978b7d1b9e0a8cc982a3d19d535dfd9c0c::v2_1_domains::RegisterNameEvent";
-      const stakeOnAmnisKey =
-        "0x111ae3e5bc816a5e63c2da97d0aa3886519e0cd5e4b046659fa35796bd11542a";
-      const ariesKey =
-        "0x9770fa9c725cbd97eb50b2be5f7416efdfd1f1554beb0750d4dae4c64e860da3";
       for (const event of events) {
+        const accountAddr = `0x${event.key!.accountAddress}`;
         // tracking people
         const accountEntity = new Account();
-        accountEntity.account_address = `0x${event.key!.accountAddress}`;
-        accountEntity.data = event.data!;
-        accountEntity.type = event.typeStr!;
+        accountEntity.account_address = accountAddr;
         accountEntity.inserted_at = insertedAt;
         accounts.push(accountEntity);
 
@@ -70,23 +68,29 @@ export class EventProcessor extends TransactionsProcessor {
         eventEntity.eventIndex = i.toString();
         eventEntity.sequenceNumber = event.sequenceNumber!.toString();
         eventEntity.creationNumber = event.key!.creationNumber!.toString();
-        eventEntity.accountAddress = `0x${event.key!.accountAddress}`;
+        eventEntity.accountAddress = accountAddr;
         eventEntity.type = event.typeStr!;
         eventEntity.data = event.data!;
         eventEntity.transactionBlockHeight = transactionBlockHeight.toString();
         eventEntity.inserted_at = insertedAt;
         eventEntity.inserted_at = insertedAt;
         eventEntity.event_type = "";
-        if (event.typeStr?.includes(registerDomainKey)) {
-          eventEntity.event_type = "REGISTER_DOMAIN";
+
+        if (event.typeStr?.includes(trackingKey.registerDomainKey)) {
+          eventEntity.event_type = eventTypeEnum.REGISTER_DOMAIN;
           objects.push(eventEntity);
         }
-        if (event.typeStr?.includes(stakeOnAmnisKey)) {
-          eventEntity.event_type = "STAKE_ON_AMNIS";
+        if (accountAddr === trackingKey.stakeOnAmnisKey) {
+          eventEntity.event_type = eventTypeEnum.STAKE_ON_AMNIS;
           objects.push(eventEntity);
         }
-        if (event.typeStr?.includes(ariesKey)) {
-          eventEntity.event_type = "ARIES";
+        if (accountAddr === trackingKey.ariesKey) {
+          eventEntity.event_type = eventTypeEnum.ARIES;
+          objects.push(eventEntity);
+        }
+        if (accountAddr === trackingKey.swapOnLiquidswapKey_v1
+          || accountAddr === trackingKey.swapOnLiquidswapKey_v2) {
+          eventEntity.event_type = eventTypeEnum.SWAP_ON_LIQUID;
           objects.push(eventEntity);
         }
         i++;
@@ -106,7 +110,7 @@ export class EventProcessor extends TransactionsProcessor {
           .map((account) => {
             const values = Object.values(account).map((value) => {
               return value instanceof Date
-                ? `'${value.toISOString()}'`
+                ? `'${value.toUTCString()}'`
                 : `'${value ?? ""}'`;
             });
 
@@ -114,7 +118,7 @@ export class EventProcessor extends TransactionsProcessor {
           })
           .join(", ");
         await txnManager.query(`
-        INSERT INTO accounts (account_address, data, type, inserted_at)
+        INSERT INTO accounts (account_address, inserted_at)
         VALUES ${valuesString}
         ON CONFLICT DO NOTHING;`);
       }

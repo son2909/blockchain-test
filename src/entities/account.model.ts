@@ -6,12 +6,6 @@ export class Account extends Base {
   @PrimaryColumn()
   account_address!: string;
 
-  @Column()
-  data!: string;
-
-  @Column()
-  type!: string;
-
   @Column({ type: "timestamptz", nullable: true })
   inserted_at!: Date;
 }
