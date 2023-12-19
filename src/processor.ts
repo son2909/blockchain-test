@@ -88,9 +88,23 @@ export class EventProcessor extends TransactionsProcessor {
           eventEntity.event_type = eventTypeEnum.ARIES;
           objects.push(eventEntity);
         }
-        if (accountAddr === trackingKey.swapOnLiquidswapKey_v1
-          || accountAddr === trackingKey.swapOnLiquidswapKey_v2) {
+        if (
+          accountAddr === trackingKey.swapOnLiquidswapKey_v1 ||
+          accountAddr === trackingKey.swapOnLiquidswapKey_v2
+        ) {
           eventEntity.event_type = eventTypeEnum.SWAP_ON_LIQUID;
+          objects.push(eventEntity);
+        }
+        if (accountAddr === trackingKey.swapOnPancakeswapKey) {
+          eventEntity.event_type = eventTypeEnum.SWAP_ON_PANCAKESWAP;
+          objects.push(eventEntity);
+        }
+        if (accountAddr === trackingKey.swapOnThalaKey) {
+          eventEntity.event_type = eventTypeEnum.SWAP_ON_THALA;
+          objects.push(eventEntity);
+        }
+        if (accountAddr === trackingKey.liquidityOnMerkleKey) {
+          eventEntity.event_type = eventTypeEnum.LIQUIDITY_ON_MERKLE;
           objects.push(eventEntity);
         }
         i++;
