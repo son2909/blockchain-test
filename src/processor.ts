@@ -48,6 +48,9 @@ export class EventProcessor extends TransactionsProcessor {
       }
 
       const userTransaction = transaction.user!;
+      const entryFunctionStr =
+        userTransaction.request?.payload?.entryFunctionPayload
+          ?.entryFunctionIdStr;
 
       const events = userTransaction.events!;
       const objects: Event[] = [];
@@ -84,8 +87,12 @@ export class EventProcessor extends TransactionsProcessor {
           eventEntity.event_type = eventTypeEnum.STAKE_ON_AMNIS;
           objects.push(eventEntity);
         }
-        if (accountAddr === trackingKey.ariesKey) {
+        if (entryFunctionStr?.includes(trackingKey.ariesKey)) {
+          const payload =
+            userTransaction.request?.payload?.entryFunctionPayload?.function;
           eventEntity.event_type = eventTypeEnum.ARIES;
+          eventEntity.type = entryFunctionStr;
+          eventEntity.accountAddress = payload?.module?.address!;
           objects.push(eventEntity);
         }
         if (
