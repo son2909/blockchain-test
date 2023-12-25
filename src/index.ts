@@ -31,7 +31,7 @@ async function main(config: any) {
   setInterval(async () => {
     processor = new EventProcessor();
     const client = await getClient(config?.db_connection_uri);
-    const result = await client.query(`Select * from next_version_to_process;`);
+    const result = await client.query("Select * from next_version_to_process;");
     if (result?.rows[0]) {
       config.starting_version = Number(result?.rows[0]?.next_version);
     }

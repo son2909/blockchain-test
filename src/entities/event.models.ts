@@ -32,5 +32,5 @@ export class Event extends Base {
   inserted_at!: Date;
 
   @Column()
-  event_type!: string;
+  application!: string;
 }

@@ -77,20 +77,20 @@ export class EventProcessor extends TransactionsProcessor {
         eventEntity.transactionBlockHeight = transactionBlockHeight.toString();
         eventEntity.inserted_at = insertedAt;
         eventEntity.inserted_at = insertedAt;
-        eventEntity.event_type = "";
+        eventEntity.application = "";
 
         if (event.typeStr?.includes(trackingKey.registerDomainKey)) {
-          eventEntity.event_type = eventTypeEnum.REGISTER_DOMAIN;
+          eventEntity.application = eventTypeEnum.REGISTER_DOMAIN;
           objects.push(eventEntity);
         }
         if (accountAddr === trackingKey.stakeOnAmnisKey) {
-          eventEntity.event_type = eventTypeEnum.STAKE_ON_AMNIS;
+          eventEntity.application = eventTypeEnum.STAKE_ON_AMNIS;
           objects.push(eventEntity);
         }
         if (entryFunctionStr?.includes(trackingKey.ariesKey)) {
           const payload =
             userTransaction.request?.payload?.entryFunctionPayload?.function;
-          eventEntity.event_type = eventTypeEnum.ARIES;
+          eventEntity.application = eventTypeEnum.ARIES;
           eventEntity.type = entryFunctionStr;
           eventEntity.accountAddress = payload?.module?.address!;
           objects.push(eventEntity);
@@ -99,19 +99,19 @@ export class EventProcessor extends TransactionsProcessor {
           accountAddr === trackingKey.swapOnLiquidswapKey_v1 ||
           accountAddr === trackingKey.swapOnLiquidswapKey_v2
         ) {
-          eventEntity.event_type = eventTypeEnum.SWAP_ON_LIQUID;
+          eventEntity.application = eventTypeEnum.SWAP_ON_LIQUID;
           objects.push(eventEntity);
         }
         if (accountAddr === trackingKey.swapOnPancakeswapKey) {
-          eventEntity.event_type = eventTypeEnum.SWAP_ON_PANCAKESWAP;
+          eventEntity.application = eventTypeEnum.SWAP_ON_PANCAKESWAP;
           objects.push(eventEntity);
         }
         if (accountAddr === trackingKey.swapOnThalaKey) {
-          eventEntity.event_type = eventTypeEnum.SWAP_ON_THALA;
+          eventEntity.application = eventTypeEnum.SWAP_ON_THALA;
           objects.push(eventEntity);
         }
         if (accountAddr === trackingKey.liquidityOnMerkleKey) {
-          eventEntity.event_type = eventTypeEnum.LIQUIDITY_ON_MERKLE;
+          eventEntity.application = eventTypeEnum.LIQUIDITY_ON_MERKLE;
           objects.push(eventEntity);
         }
         i++;
